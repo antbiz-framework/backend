@@ -1,0 +1,14 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+antbiz:
+  jwt:
+    signing-key: SIGNING_RSA_KEY
+    validate-key: VALIDATE_RSA_KEY
+    issuer: localhost
+    access-token-validity: 900
+    refresh-token-validity: 2592000
+  etc:
+    host: "localhost:8080"
