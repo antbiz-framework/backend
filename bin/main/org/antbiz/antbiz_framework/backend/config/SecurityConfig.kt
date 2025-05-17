@@ -34,7 +34,7 @@ class SecurityConfig(
     private val host: String
 ): WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
-        val origins = mutableListOf<String>()
+        val origins = mutableListOf("http://localhost:3000", "http://localhost:8080")
         origins.addAll(host.split(",").mapNotNull { it.trim() })
 
         registry.addMapping("/**")

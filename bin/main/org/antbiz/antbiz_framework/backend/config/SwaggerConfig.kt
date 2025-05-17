@@ -19,7 +19,7 @@ class SwaggerConfig(
 ) {
     private val securitySchemeName = "api token"
 
-    val hosts = "$host, $frontend"
+    val hosts = "http://localhost:8080, $host, $frontend"
     val servers = hosts.split(",").mapNotNull { it.trim() }.map { Server().url(it) }
 
     @Bean

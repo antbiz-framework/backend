@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.context.annotation.Import
 import space.mori.dalbodeule.snapadmin.external.SnapAdminAutoConfiguration
+import java.lang.annotation.ElementType
 
 
 @AutoConfiguration
@@ -41,12 +42,11 @@ import space.mori.dalbodeule.snapadmin.external.SnapAdminAutoConfiguration
     SecurityConfig::class,
     SwaggerConfig::class,
     LoginController::class,
-    NativeConf::class,
 )
 @ImportAutoConfiguration(classes = [SnapAdminAutoConfiguration::class])
 class AntBizFrameworkConfigure
 
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.TYPE)
 @Retention(AnnotationRetention.RUNTIME)
 @Import(AntBizFrameworkConfigure::class)
 annotation class EnableAntBizFramework

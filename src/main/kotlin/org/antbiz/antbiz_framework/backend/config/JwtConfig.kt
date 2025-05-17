@@ -18,27 +18,35 @@ class JwtConfig(
 
     @Bean
     fun privateKey(): PrivateKey {
-        val keyData = privateKeyBase64
-            .replace("-----BEGIN PRIVATE KEY-----", "")
-            .replace("-----END PRIVATE KEY-----", "")
-            .replace("\\s".toRegex(), "") // Remove newlines and extra spaces
+        try {
+            val keyData = privateKeyBase64
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replace("\\s".toRegex(), "") // Remove newlines and extra spaces
 
-        val keyBytes = Base64.getDecoder().decode(keyData)
-        val keySpec = PKCS8EncodedKeySpec(keyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        return keyFactory.generatePrivate(keySpec)
+            val keyBytes = Base64.getDecoder().decode(keyData)
+            val keySpec = PKCS8EncodedKeySpec(keyBytes)
+            val keyFactory = KeyFactory.getInstance("RSA")
+            return keyFactory.generatePrivate(keySpec)
+        } catch(ex: Exception) {
+            throw RuntimeException("Invalid private key", ex)
+        }
     }
 
     @Bean
     fun publicKey(): PublicKey {
-        val keyData = publicKeyBase64
-            .replace("-----BEGIN PUBLIC KEY-----", "")
-            .replace("-----END PUBLIC KEY-----", "")
-            .replace("\\s".toRegex(), "") // Remove newlines and extra spaces
+        try {
+            val keyData = publicKeyBase64
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replace("\\s".toRegex(), "") // Remove newlines and extra spaces
 
-        val keyBytes = Base64.getDecoder().decode(keyData)
-        val keySpec = X509EncodedKeySpec(keyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        return keyFactory.generatePublic(keySpec)
+            val keyBytes = Base64.getDecoder().decode(keyData)
+            val keySpec = X509EncodedKeySpec(keyBytes)
+            val keyFactory = KeyFactory.getInstance("RSA")
+            return keyFactory.generatePublic(keySpec)
+        } catch(ex: Exception) {
+            throw RuntimeException("Invalid public key", ex)
+        }
     }
 }

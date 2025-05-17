@@ -7,31 +7,28 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
 import java.io.Serializable
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "refresh_token")
+
 data class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    var id: String? = null,
+    protected var id: String? = null,
 
     @Column(nullable = false, unique = true, length = 2048)
-    var token: String,
+    protected var token: String,
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    var user: User?,
+    protected var user: User,
 
     @Column(nullable = false)
-    val expiryDate: LocalDateTime = LocalDateTime.now(),
+    val expiryDate: LocalDateTime = LocalDateTime.now()
 ) {
     constructor(): this(
-        id = null,
         token = "",
-        user = null,
-        expiryDate = LocalDateTime.now()
+        user = User()
     )
 }

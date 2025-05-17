@@ -12,4 +12,3 @@ antbiz:
     refresh-token-validity: 2592000
   etc:
     host: "localhost:8080"
-    frontend: "localhost:3000"

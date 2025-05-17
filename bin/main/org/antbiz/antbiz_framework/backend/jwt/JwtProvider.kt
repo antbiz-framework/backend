@@ -74,7 +74,7 @@ class JwtProvider(
         val jwt = parseJwts(token)
 
         if(jwt?.issuer != issuer) throw InvalidIssuerException()
-        return (jwt["userId"] ?: throw UnauthorizedException()) as String
+        return jwt.id ?: throw UnauthorizedException()
     }
 
     fun parseJwts(token: String): Claims? {

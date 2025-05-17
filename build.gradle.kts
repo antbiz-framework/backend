@@ -8,11 +8,11 @@ plugins {
     id("org.hibernate.orm") version "6.6.13.Final" 
     kotlin("plugin.jpa") version "1.9.25"
     id("com.vanniktech.maven.publish") version "0.32.0"
-    signing
+    id("org.jetbrains.dokka") version "1.8.10"
 }
 
 group = "org.antbiz.antbiz-framework"
-version = "0.0.1"
+version = "0.0.3"
 
 java {
     toolchain {
@@ -33,47 +33,50 @@ dependencyManagement {
     }
 }
 
+tasks.register<Jar>("javadocJar") {
+    dependsOn(tasks.dokkaJavadoc)
+    archiveClassifier.set("javadoc")
+    from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
+    from("${rootDir}/LICENSE.md")
+    from("${rootDir}/README.md")
+}
+
 mavenPublishing {
     coordinates(
-        groupId = group as String,
-        artifactId = name,
-        version = version as String
+        groupId = group.toString(),
+        artifactId = project.name,
+        version = version.toString()
     )
-
     pom {
-        name = "AntBiz Framework Backend"
-        description = "AntBiz Framework Backend starter"
-        url = "https://github.com/antbiz-framework/backend"
+        name.set("AntBiz Framework Backend")
+        description.set("AntBiz Framework Backend starter")
+        url.set("https://github.com/antbiz-framework/backend")
 
         licenses {
             license {
-                name = "MIT License"
-                url = "https://github.com/antbiz-framework/backend/blob/main/LICENSE.md"
+                name.set("MIT License")
+                url.set("https://github.com/antbiz-framework/backend/blob/main/LICENSE.md")
             }
         }
 
         developers {
             developer {
-                id = "javaoraclecoffee11"
-                name = "javaoraclecoffee11"
-                email = "javaoraclecoffee11@gmail.com"
-                url = "https://github.com/javaoraclecoffee11"
+                id.set("javaoraclecoffee11")
+                name.set("javaoraclecoffee11")
+                email.set("javaoraclecoffee11@gmail.com")
+                url.set("https://github.com/javaoraclecoffee11")
             }
         }
 
         scm {
-            connection = "scm:git:git://github.com/antbiz-framework/backend.git"
-            developerConnection = "scm:git:ssh://github.com/antbiz-framework/backend.git"
-            url = "https://github.com/antbiz-framework/backend"
+            connection.set("scm:git:git://github.com/antbiz-framework/backend.git")
+            developerConnection.set("scm:git:ssh://github.com/antbiz-framework/backend.git")
+            url.set("https://github.com/antbiz-framework/backend")
         }
     }
+    signAllPublications()
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, true)
-}
-
-signing {
-    useGpgCmd()
-    sign(publishing.publications)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
 }
 
 dependencies {
