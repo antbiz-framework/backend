@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 @Service
 class RevokedTokenService(
     @Autowired
-    private val revokedTokenRepository: RevokedTokenRepository
+    private val revokedTokenRepository: RevokedTokenRepository,
 ) {
     // 토큰이 Revoke되었는지 확인
     fun isTokenRevoked(token: String): Boolean {

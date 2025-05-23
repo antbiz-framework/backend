@@ -3,6 +3,8 @@ package org.antbiz.antbiz_framework.framework.config
 import org.antbiz.antbiz_framework.framework.security.ExceptionHandlerFilter
 import org.antbiz.antbiz_framework.framework.security.JwtAuthenticationFilter
 import org.antbiz.antbiz_framework.framework.service.UserService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -11,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.DefaultSecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.annotation.Order
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -19,50 +22,95 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.logout.LogoutFilter
-import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
-@Configuration(proxyBeanMethods = false)
+@Configuration(proxyBeanMethods = true)
 @EnableMethodSecurity
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val exceptionHandlerFilter: ExceptionHandlerFilter,
+    @Autowired
+    private val userService: UserService,
     @Value("\${antbiz.etc.host}")
-    private val host: String
+    private val host: String,
+    @Value("\${antbiz.etc.frontend}")
+    private val frontendHost: String
 ): WebMvcConfigurer {
-    override fun addCorsMappings(registry: CorsRegistry) {
-        val origins = mutableListOf<String>()
-        origins.addAll(host.split(",").mapNotNull { it.trim() })
-
-        registry.addMapping("/**")
-            .allowedOrigins(*origins.toTypedArray())
-            .allowedHeaders("Authorization", "Content-Type", "X-CSRF-TOKEN")
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowCredentials(true)
+    @Bean
+    @Order(1)
+    open fun jwtSecurityFilterChain(
+        http: HttpSecurity,
+        @Qualifier("AntbizUserService")
+        userDetailsService: UserDetailsService
+    ): SecurityFilterChain {
+        return http
+            .csrf { it.disable() }
+            .cors {
+                val configuration = CorsConfiguration().apply {
+                    allowedOrigins = listOf(host, frontendHost)
+                        .mapNotNull { it.trim() }
+                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+                    allowCredentials = true
+                }
+                val source = UrlBasedCorsConfigurationSource().apply {
+                    registerCorsConfiguration("/**", configuration)
+                }
+                it.configurationSource(source)
+            }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .authorizeHttpRequests { auth ->
+                auth
+                    .requestMatchers(
+                        "/auth/**",
+                        "/api/integrity/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/api-docs/**",
+                        "/v3/api-docs/**",
+                        "/v2/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**"
+                    ).permitAll()
+                auth.anyRequest().authenticated()
+            }
+            .addFilterBefore(exceptionHandlerFilter, LogoutFilter::class.java)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .authenticationProvider(authenticationProvider())
+            .userDetailsService(userDetailsService)
+            .build()
     }
 
+
     @Bean
-    public fun filterChain(http: HttpSecurity, userDetailsService: UserDetailsService): DefaultSecurityFilterChain {
-        return http
-            .csrf {
-                it.disable()
+    @Order(2)
+    fun basicAuthSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .securityMatcher("/login", "/logout", "/admin/**") // HTTP Basic 인증을 적용할 경로 지정
+            .csrf { it.disable() }
+            .cors {
+                val configuration = CorsConfiguration().apply {
+                    allowedOrigins = listOf(host, frontendHost).mapNotNull { it.trim() }
+                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+                    allowCredentials = true
+                }
+                val source = UrlBasedCorsConfigurationSource().apply {
+                    registerCorsConfiguration("/**", configuration)
+                }
+                it.configurationSource(source)
             }
-            .authorizeHttpRequests {
-                it.requestMatchers("/framework/admin/**").hasRole("ADMIN")
-                it.requestMatchers("/framework/auth/**").permitAll()
-                it.requestMatchers("/framework/api/**").permitAll()
-                it.requestMatchers(
-                    "/swagger-ui.html",
-                    "/swagger-ui/**",
-                    "/api-docs/**",
-                    "/v3/api-docs/**",
-                    "/v2/api-docs/**",
-                    "/swagger-resources/**",
-                    "/webjars/**"
-                ).permitAll()
-                it.anyRequest().authenticated()
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
+            .authorizeHttpRequests { auth ->
+                auth
+                    .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 역할을 가진 사용자만 접근 가능
+                    .requestMatchers("/login", "/logout").permitAll() // 로그인 및 로그아웃은 모두 접근 가능
+                    .anyRequest().authenticated()
             }
             .formLogin {
                 it.loginPage("/login")
@@ -75,32 +123,24 @@ class SecurityConfig(
                     .deleteCookies("JSESSIONID")
                     .permitAll()
             }
-            .sessionManagement {
-                it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            }
-            .httpBasic(Customizer.withDefaults())
-            .addFilterBefore(exceptionHandlerFilter, LogoutFilter::class.java)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .userDetailsService(userDetailsService)
-            .build()
+            .httpBasic(Customizer.withDefaults()) // HTTP Basic 인증 활성화
+            .authenticationProvider(authenticationProvider())
+            .userDetailsService(userService)
+
+        return http.build()
     }
 
     @Bean
-    fun passwordEncoder(): BCryptPasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
-    @Bean
-    fun authenticationProvider(
-        userService: UserService,
-        passwordEncoder: BCryptPasswordEncoder
-    ): AuthenticationProvider {
+    fun authenticationProvider(): AuthenticationProvider {
         val authProvider = DaoAuthenticationProvider()
         authProvider.setUserDetailsService(userService)
-        authProvider.setPasswordEncoder(passwordEncoder)
+        authProvider.setPasswordEncoder(passwordEncoder())
 
         return authProvider
     }
+
+    @Bean
+    fun passwordEncoder() = BCryptPasswordEncoder()
 
     @Bean
     fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager {
