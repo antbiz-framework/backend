@@ -15,18 +15,17 @@ import org.antbiz.antbiz_framework.framework.service.RevokedTokenService
 import org.antbiz.antbiz_framework.framework.service.TokenService
 import org.antbiz.antbiz_framework.framework.service.UserService
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Import
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import space.mori.dalbodeule.snapadmin.external.SnapAdminAutoConfiguration
+import space.mori.dalbodeule.snapadmin.external.annotations.SnapAdminEnabled
 
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["org.antbiz.antbiz_framework.framework.repository"])
-@EntityScan(basePackages = ["org.antbiz.antbiz_framework.framework."])
+@EntityScan(basePackages = ["org.antbiz.antbiz_framework.framework.model"])
 @Import(
     RefreshToken::class,
     RevokedToken::class,
@@ -44,7 +43,7 @@ import space.mori.dalbodeule.snapadmin.external.SnapAdminAutoConfiguration
     NativeConf::class,
     AntBizJpaAutoConfig::class
 )
-@ImportAutoConfiguration(classes = [SnapAdminAutoConfiguration::class])
+@SnapAdminEnabled
 @ConditionalOnClass(JpaRepository::class)
 class AntBizFrameworkConfigure
 

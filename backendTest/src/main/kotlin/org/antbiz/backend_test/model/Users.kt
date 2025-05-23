@@ -1,8 +1,8 @@
 package org.antbiz.backend_test.model
 
 import jakarta.persistence.*
-import org.antbiz.framework.model.GenderEnum
-import org.antbiz.framework.model.UserEntity
+import org.antbiz.antbiz_framework.framework.model.GenderEnum
+import org.antbiz.antbiz_framework.framework.model.UserEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -16,7 +16,7 @@ open class UserAdditional(
     gender: GenderEnum,
     birthDate: LocalDateTime,
     profile: String? = null,
-    
+
     @Column(nullable = false, length = PHONE_LENGTH, unique = true)
     var phoneNumber: String,
 

@@ -107,7 +107,7 @@ dependencies {
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-gson
     implementation("io.jsonwebtoken:jjwt-gson:0.12.6")
 
-    implementation("space.mori.dalbodeule:snap-admin:0.5.1")
+    implementation("space.mori.dalbodeule:snap-admin:0.6.0")
 
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
     implementation("javax.xml.bind:jaxb-api:2.3.1")
