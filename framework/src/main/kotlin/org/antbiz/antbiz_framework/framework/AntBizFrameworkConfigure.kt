@@ -14,8 +14,8 @@ import space.mori.dalbodeule.snapadmin.external.annotations.SnapAdminEnabled
 @EnableJpaRepositories(basePackages = ["org.antbiz.antbiz_framework.framework.repository"])
 @EntityScan(basePackages = ["org.antbiz.antbiz_framework.framework.model"])
 @ComponentScan(basePackages = ["org.antbiz.antbiz_framework.framework"])
-@SnapAdminEnabled
 @ConditionalOnClass(JpaRepository::class)
+@SnapAdminEnabled
 class AntBizFrameworkConfigure
 
 @Target(AnnotationTarget.CLASS)

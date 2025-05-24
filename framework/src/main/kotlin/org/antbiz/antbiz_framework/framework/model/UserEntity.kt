@@ -2,8 +2,6 @@ package org.antbiz.antbiz_framework.framework.model
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -15,10 +13,8 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import space.mori.dalbodeule.snapadmin.external.annotations.DisplayName
-import space.mori.dalbodeule.snapadmin.external.annotations.HiddenColumn
 import java.io.Serializable
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 
 @Entity
@@ -36,25 +32,15 @@ open class UserEntity(
 
     @Column(nullable = false) open var roles: String,
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING) open var gender: GenderEnum,
-
-    @Column(nullable = false) open var birthDate: LocalDateTime,
-
-    @HiddenColumn
-    @Column(nullable = true, length = 512) open var profile: String? = null,
-
     @Column(nullable = false) open val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(nullable = false) open var updatedAt: LocalDateTime = LocalDateTime.now(),
 ) : UserDetails, Serializable {
-    protected constructor(): this(
+     constructor(): this(
         _username = "",
         email = "",
         _password = "",
-        roles = "",
-        gender = GenderEnum.UNKNOWN,
-        birthDate = LocalDateTime.now()
+        roles = "ROLE_USER",
     )
   
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
@@ -74,9 +60,6 @@ open class UserEntity(
     override fun isAccountNonExpired(): Boolean = true
     override fun getUsername(): String = email
 
-    val age: Long?
-        get() = birthDate.let { ChronoUnit.YEARS.between(it, LocalDateTime.now()) }
-
     @PreUpdate
     private fun onUpdate() {
         updatedAt = LocalDateTime.now()
@@ -87,9 +70,3 @@ open class UserEntity(
         get() = this._username
 }
 
-enum class GenderEnum(val value: String) {
-    MALE("MALE"),
-    FEMALE("FEMALE"),
-    THIRD_GENDER("THIRD_GENDER"),
-    UNKNOWN("UNKNOWN")
-}

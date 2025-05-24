@@ -6,7 +6,6 @@ plugins {
     id("org.hibernate.orm") version "6.6.13.Final"
     id("org.graalvm.buildtools.native") version "0.10.6"
     kotlin("plugin.jpa") version "1.9.25"
-    id("com.github.node-gradle.node") version "7.1.0"
 }
 
 group = "org.antbiz"
@@ -30,7 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("space.mori.dalbodeule:snap-admin:0.5.1")
+    implementation("space.mori.dalbodeule:snap-admin:0.6.2")
 
     implementation(project(":framework"))
 

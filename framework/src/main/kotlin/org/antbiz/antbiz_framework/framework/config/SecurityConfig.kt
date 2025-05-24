@@ -41,6 +41,18 @@ class SecurityConfig(
     @Value("\${antbiz.etc.frontend}")
     private val frontendHost: String
 ): WebMvcConfigurer {
+    private val ALLOWED_HTTP_METHODS = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    private val ALLOWED_HEADERS = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+
+    private fun createCorsConfiguration(host: String, frontendHost: String): CorsConfiguration {
+        return CorsConfiguration().apply {
+            allowedOrigins = listOf(host, frontendHost).mapNotNull { it.trim() }
+            allowedMethods = ALLOWED_HTTP_METHODS
+            allowedHeaders = ALLOWED_HEADERS
+            allowCredentials = true
+        }
+    }
+
     @Bean
     @Order(1)
     open fun jwtSecurityFilterChain(
@@ -49,34 +61,18 @@ class SecurityConfig(
         userDetailsService: UserDetailsService
     ): SecurityFilterChain {
         return http
+            .securityMatcher("/api/**")
             .csrf { it.disable() }
             .cors {
-                val configuration = CorsConfiguration().apply {
-                    allowedOrigins = listOf(host, frontendHost)
-                        .mapNotNull { it.trim() }
-                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
-                    allowCredentials = true
-                }
+                val corsConfiguration = createCorsConfiguration(host, frontendHost)
                 val source = UrlBasedCorsConfigurationSource().apply {
-                    registerCorsConfiguration("/**", configuration)
+                    registerCorsConfiguration("/**", corsConfiguration)
                 }
                 it.configurationSource(source)
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
-                auth
-                    .requestMatchers(
-                        "/auth/**",
-                        "/api/integrity/**",
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/api-docs/**",
-                        "/v3/api-docs/**",
-                        "/v2/api-docs/**",
-                        "/swagger-resources/**",
-                        "/webjars/**"
-                    ).permitAll()
+                auth.requestMatchers("/api/auth/**").permitAll()
                 auth.anyRequest().authenticated()
             }
             .addFilterBefore(exceptionHandlerFilter, LogoutFilter::class.java)
@@ -86,31 +82,24 @@ class SecurityConfig(
             .build()
     }
 
-
     @Bean
     @Order(2)
     fun basicAuthSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .securityMatcher("/login", "/logout", "/admin/**") // HTTP Basic 인증을 적용할 경로 지정
+            .securityMatcher("/login", "/logout", "/admin/**")
             .csrf { it.disable() }
             .cors {
-                val configuration = CorsConfiguration().apply {
-                    allowedOrigins = listOf(host, frontendHost).mapNotNull { it.trim() }
-                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
-                    allowCredentials = true
-                }
+                val corsConfiguration = createCorsConfiguration(host, frontendHost)
                 val source = UrlBasedCorsConfigurationSource().apply {
-                    registerCorsConfiguration("/**", configuration)
+                    registerCorsConfiguration("/**", corsConfiguration)
                 }
                 it.configurationSource(source)
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
             .authorizeHttpRequests { auth ->
-                auth
-                    .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 역할을 가진 사용자만 접근 가능
-                    .requestMatchers("/login", "/logout").permitAll() // 로그인 및 로그아웃은 모두 접근 가능
-                    .anyRequest().authenticated()
+                auth.requestMatchers("/admin/**").hasRole("ADMIN")
+                auth.requestMatchers("/login", "/logout").permitAll()
+                auth.anyRequest().authenticated()
             }
             .formLogin {
                 it.loginPage("/login")
@@ -123,11 +112,29 @@ class SecurityConfig(
                     .deleteCookies("JSESSIONID")
                     .permitAll()
             }
-            .httpBasic(Customizer.withDefaults()) // HTTP Basic 인증 활성화
+            .httpBasic(Customizer.withDefaults())
             .authenticationProvider(authenticationProvider())
             .userDetailsService(userService)
-
         return http.build()
+    }
+
+    @Bean
+    @Order(3)
+    fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        return http
+            .authorizeHttpRequests {
+                it.requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/api-docs/**",
+                    "/v3/api-docs/**",
+                    "/v2/api-docs/**",
+                    "/swagger-resources/**",
+                    "/webjars/**"
+                ).permitAll()
+                it.anyRequest().permitAll()
+            }
+            .build()
     }
 
     @Bean

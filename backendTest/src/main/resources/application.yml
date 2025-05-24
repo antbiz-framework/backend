@@ -19,3 +19,8 @@ antbiz:
   etc:
     frontend: ${FRONTEND_NAME}
     host: ${HOST_NAME}
+snapadmin:
+  enabled: true
+  baseUrl: admin
+  models-package: org.antbiz.antbiz_framework.framework.model,org.antbiz.backend_test.model
+  brand-name: Antbiz

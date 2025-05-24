@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "org.antbiz.antbiz-framework"
-version = "0.1.2"
+version = "0.2.0"
 
 java {
     toolchain {
@@ -89,6 +89,8 @@ dependencies {
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
     runtimeOnly("org.postgresql:postgresql")
 
+    implementation("space.mori.dalbodeule:snap-admin:0.6.2")
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
     implementation("io.swagger.core.v3:swagger-core:2.2.30")
@@ -106,8 +108,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.12.6")
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-gson
     implementation("io.jsonwebtoken:jjwt-gson:0.12.6")
-
-    implementation("space.mori.dalbodeule:snap-admin:0.6.0")
 
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
     implementation("javax.xml.bind:jaxb-api:2.3.1")

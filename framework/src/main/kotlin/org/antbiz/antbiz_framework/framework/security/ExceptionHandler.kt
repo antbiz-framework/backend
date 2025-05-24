@@ -15,10 +15,10 @@ import java.io.IOException
 
 @Component
 class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRequestFilter() {
-
     companion object {
         private const val ERROR_WRITING_RESPONSE = "Error on Exception Handling!"
         private const val JSON_MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE
+        private val EXCLUDED_PATHS = listOf("/admin", "/admin/**", "/login")
     }
 
     override fun doFilterInternal(
@@ -29,24 +29,30 @@ class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRe
         try {
             filterChain.doFilter(request, response)
         } catch (e: CustomException) {
-            println("${e.message}, status: ${e.status}")
+            logger.warn("${e.message}, status: ${e.status}")
             writeErrorResponse(response, e)
         } catch (e: RuntimeException) {
             writeErrorResponse(response, ServerErrorException())
-        } catch(e: ServletException) {
+        } catch (e: ServletException) {
             val cause = e.cause
             if (cause is CustomException) {
                 writeErrorResponse(response, cause)
             } else {
-                println(e.javaClass.name)
-                println(e.stackTraceToString())
-                writeErrorResponse(response, ServerErrorException())
+                handleUnknownException(e, response)
             }
-        } catch(e: Exception) {
-            println(e.javaClass.name)
-            println(e.stackTraceToString())
-            writeErrorResponse(response, ServerErrorException())
+        } catch (e: Exception) {
+            handleUnknownException(e, response)
         }
+    }
+
+    private fun handleUnknownException(e: Exception, response: HttpServletResponse) {
+        logExceptionStacktrace(e)
+        writeErrorResponse(response, ServerErrorException())
+    }
+
+    private fun logExceptionStacktrace(e: Exception) {
+        logger.error(e.javaClass.name)
+        logger.error(e.stackTraceToString())
     }
 
     private fun writeErrorResponse(
@@ -55,9 +61,7 @@ class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRe
     ) {
         response.status = error.status
         response.contentType = JSON_MEDIA_TYPE
-
         val errorResponse = createErrorResponseDto(error)
-
         try {
             response.writer.write(objectMapper.writeValueAsString(errorResponse))
         } catch(e: IOException) {
@@ -74,8 +78,6 @@ class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRe
     }
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        val excludePath = listOf("/admin", "/admin/**", "/login")
-
-        return excludePath.any { request.requestURI.contains(it) }
+        return EXCLUDED_PATHS.any { request.requestURI.contains(it) }
     }
 }
