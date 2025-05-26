@@ -41,18 +41,6 @@ class SecurityConfig(
     @Value("\${antbiz.etc.frontend}")
     private val frontendHost: String
 ): WebMvcConfigurer {
-    private val ALLOWED_HTTP_METHODS = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    private val ALLOWED_HEADERS = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
-
-    private fun createCorsConfiguration(host: String, frontendHost: String): CorsConfiguration {
-        return CorsConfiguration().apply {
-            allowedOrigins = listOf(host, frontendHost).mapNotNull { it.trim() }
-            allowedMethods = ALLOWED_HTTP_METHODS
-            allowedHeaders = ALLOWED_HEADERS
-            allowCredentials = true
-        }
-    }
-
     @Bean
     @Order(1)
     open fun jwtSecurityFilterChain(
@@ -64,9 +52,14 @@ class SecurityConfig(
             .securityMatcher("/api/**")
             .csrf { it.disable() }
             .cors {
-                val corsConfiguration = createCorsConfiguration(host, frontendHost)
+                val configuration = CorsConfiguration().apply {
+                    allowedOrigins = listOf("http://localhost:3000", "http://localhost:8080", host, frontendHost).mapNotNull { it.trim() }
+                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+                    allowCredentials = true
+                }
                 val source = UrlBasedCorsConfigurationSource().apply {
-                    registerCorsConfiguration("/**", corsConfiguration)
+                    registerCorsConfiguration("/**", configuration)
                 }
                 it.configurationSource(source)
             }
@@ -89,9 +82,14 @@ class SecurityConfig(
             .securityMatcher("/login", "/logout", "/admin/**")
             .csrf { it.disable() }
             .cors {
-                val corsConfiguration = createCorsConfiguration(host, frontendHost)
+                val configuration = CorsConfiguration().apply {
+                    allowedOrigins = listOf("http://localhost:3000", "http://localhost:8080", host, frontendHost).mapNotNull { it.trim() }
+                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+                    allowCredentials = true
+                }
                 val source = UrlBasedCorsConfigurationSource().apply {
-                    registerCorsConfiguration("/**", corsConfiguration)
+                    registerCorsConfiguration("/**", configuration)
                 }
                 it.configurationSource(source)
             }
@@ -122,6 +120,18 @@ class SecurityConfig(
     @Order(3)
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
+            .cors {
+                val configuration = CorsConfiguration().apply {
+                    allowedOrigins = listOf("http://localhost:3000", "http://localhost:8080", host, frontendHost).mapNotNull { it.trim() }
+                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    allowedHeaders = listOf("Authorization", "Content-Type", "X-CSRF-TOKEN")
+                    allowCredentials = true
+                }
+                val source = UrlBasedCorsConfigurationSource().apply {
+                    registerCorsConfiguration("/**", configuration)
+                }
+                it.configurationSource(source)
+            }
             .authorizeHttpRequests {
                 it.requestMatchers(
                     "/swagger-ui.html",
