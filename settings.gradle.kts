@@ -1,4 +1,4 @@
 rootProject.name = "backend"
 
-include("backendTest")
 include("framework")
+include("backendTest", "frontendTest")

@@ -1,4 +1,4 @@
-package space.ohmyllm.ohmyllm.controller
+package org.antbiz.backend_test.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -163,7 +163,7 @@ class AuthController(
     )
     fun getUserInfo(
         @AuthenticationPrincipal userDetails: User?,
-    ): ResponseEntity<UserInfoResponse> {
+    ): ResponseEntity<ApiResponseDTO<UserInfoResponse>> {
         if(userDetails?.id == null) return ResponseEntity.badRequest().body(null)
 
         val user = userRepository.findById(userDetails.id ?: "").get()
@@ -173,6 +173,6 @@ class AuthController(
             user.authorities.map { it.authority },
             user.username
         )
-        return ResponseEntity.ok(userInfo)
+        return ResponseEntity.ok(ApiResponseDTO(data = userInfo))
     }
 }

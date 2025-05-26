@@ -21,16 +21,16 @@ class TestApplication
 
 fun main(args: Array<String>) {
     val envVars = mapOf<String, String>(
-        "DB_HOST" to dotenv["DB_HOST"],
-        "DB_PORT" to dotenv["DB_PORT"],
-        "DB_NAME" to dotenv["DB_NAME"],
-        "DB_USER" to dotenv["DB_USER"],
-        "DB_PASSWORD" to dotenv["DB_PASSWORD"],
-        "JWT_SIGNING_KEY" to dotenv["JWT_SIGNING_KEY"],
-        "JWT_VALIDATE_KEY" to dotenv["JWT_VALIDATE_KEY"],
-        "JWT_ISSUER" to dotenv["JWT_ISSUER"],
-        "HOST_NAME" to dotenv["HOST_NAME"],
-        "FRONTEND_NAME" to dotenv["FRONTEND_NAME"],
+        "DB_HOST" to dotenv["ANTBIZ_DB_HOST"],
+        "DB_PORT" to dotenv["ANTBIZ_DB_PORT"],
+        "DB_NAME" to dotenv["ANTBIZ_DB_NAME"],
+        "DB_USER" to dotenv["ANTBIZ_DB_USER"],
+        "DB_PASSWORD" to dotenv["ANTBIZ_DB_PASSWORD"],
+        "JWT_SIGNING_KEY" to dotenv["ANTBIZ_JWT_SIGNING_KEY"],
+        "JWT_VALIDATE_KEY" to dotenv["ANTBIZ_JWT_VALIDATE_KEY"],
+        "JWT_ISSUER" to dotenv["ANTBIZ_JWT_ISSUER"],
+        "HOST_NAME" to dotenv["ANTBIZ_HOST_NAME"],
+        "FRONTEND_NAME" to dotenv["ANTBIZ_FRONTEND_NAME"],
     )
 
     runApplication<TestApplication>(*args) {

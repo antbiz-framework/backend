@@ -1,13 +1,3 @@
-plugins {
-    kotlin("jvm") version "2.1.10"
-    kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.4.5"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.hibernate.orm") version "6.6.13.Final"
-    id("org.graalvm.buildtools.native") version "0.10.6"
-    kotlin("plugin.jpa") version "1.9.25"
-}
-
 group = "org.antbiz"
 version = "0.0.1-SNAPSHOT"
 
@@ -30,6 +20,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("space.mori.dalbodeule:snap-admin:0.6.2")
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
 
     implementation(project(":framework"))
 
